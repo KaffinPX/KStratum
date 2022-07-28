@@ -1,0 +1,25 @@
+{
+  "name": "kstratum",
+  "version": "0.0.5",
+  "description": "Stratum implementation for Kaspa",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KaffinPX/KStratum.git"
+  },
+  "keywords": [
+    "kaspa"
+  ],
+  "author": "",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/KaffinPX/KStratum/issues"
+  },
+  "homepage": "https://github.com/KaffinPX/KStratum#readme",
+  "dependencies": {
+    "kaspajs": "github:GateKVite/kaspajs"
+  }
+}
