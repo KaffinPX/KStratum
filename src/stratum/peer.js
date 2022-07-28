@@ -10,6 +10,7 @@ module.exports = class Peer extends events.EventEmitter {
     this.onGoingData = ""
 
     this._socket.on('data', (data) => this.handleStream(data))
+    this._socket.on('error', (err) => (err))
   }
 
   sendInteraction (interaction) {
@@ -26,7 +27,7 @@ module.exports = class Peer extends events.EventEmitter {
   parseInteraction (data) {
     const interaction = JSON.parse(data)
     
-    interaction.method = interaction.method.replace('miner.', '')
+    interaction.method = interaction.method.replace('mining.', '')
 
     return interaction
   }
@@ -35,13 +36,15 @@ module.exports = class Peer extends events.EventEmitter {
     this.onGoingData += data.toString()
 
     if (this.onGoingData.includes('}')) {
-      const splittedData = this.onGoingData.split('}')
+      const splittedData = this.onGoingData.split('{')
 
-      try {
-        this.emit('interaction', this.parseInteraction(splittedData[0]))
-      } catch (err) {
-        this._socket.end('INVALID_INTERACTION')
-      }
+      splittedData.forEach((interaction) => {
+        if (!interaction.includes('}')) return this.onGoingData = interaction
+
+        try {
+          this.emit('interaction', this.parseInteraction('{' + interaction))
+        } catch (err) { this._socket.end('INVALID_INTERACTION') }
+      })
 
       this.onGoingData = this.onGoingData.split('}')?.[1] ?? ""
     }

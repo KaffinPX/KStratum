@@ -15,6 +15,8 @@ client.on('ready', () => {
   })
 
   server.on('peer', (peer) => {
-    console.log(peer)
+    peer.on('interaction', (interaction) => {
+      console.log(interaction)
+    })
   })
 })

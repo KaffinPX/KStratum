@@ -9,7 +9,7 @@ module.exports = class stratumServer extends events.EventEmitter {
 
     this.server = net.createServer()
 
-    this.server.on('connection', this.handleConnection)
+    this.server.on('connection', (socket) => this.handleConnection(socket))
     this.server.on('listening', () => this.emit('listening'))
 
     this.server.listen(port, '127.0.0.1')
