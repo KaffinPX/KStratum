@@ -13,14 +13,14 @@ module.exports = class Peer extends events.EventEmitter {
   }
 
   sendInteraction (interaction) {
-    const interaction = interaction.toJSON()
+    const jsonInteraction = interaction.toJSON()
 
-    if (typeof interaction.id === 'undefined') {
+    if (typeof jsonInteraction.id === 'undefined') {
       this.sentInteractionCount += 1
-      interaction.id = this.sentInteractionCount
+      jsonInteraction.id = this.sentInteractionCount
     }
 
-    this._socket.write(JSON.stringify(interaction))
+    this._socket.write(JSON.stringify(jsonInteraction))
   }
 
   parseInteraction (data) {
