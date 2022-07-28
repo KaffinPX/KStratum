@@ -3,7 +3,7 @@ const events = require('events')
 
 const Peer = require('./peer')
 
-module.exports = class tcpServer extends events.EventEmitter {
+module.exports = class stratumServer extends events.EventEmitter {
   constructor (port) {
     super()
 

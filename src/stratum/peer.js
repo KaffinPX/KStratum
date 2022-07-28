@@ -9,7 +9,7 @@ module.exports = class Peer extends events.EventEmitter {
     this.sentInteractionCount = 0
     this.onGoingData = ""
 
-    this._socket.on('data', handleStream)
+    this._socket.on('data', (data) => this.handleStream(data))
   }
 
   sendInteraction (interaction) {
@@ -40,7 +40,7 @@ module.exports = class Peer extends events.EventEmitter {
       try {
         this.emit('interaction', this.parseInteraction(splittedData[0]))
       } catch (err) {
-        socket.end('INVALID_INTERACTION')
+        this._socket.end('INVALID_INTERACTION')
       }
 
       this.onGoingData = this.onGoingData.split('}')?.[1] ?? ""
