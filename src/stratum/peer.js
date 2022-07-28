@@ -5,9 +5,22 @@ module.exports = class Peer extends events.EventEmitter {
     super()
 
     this._socket = socket
+
+    this.sentInteractionCount = 0
     this.onGoingData = ""
 
     this._socket.on('data', handleStream)
+  }
+
+  sendInteraction (interaction) {
+    const interaction = interaction.toJSON()
+
+    if (typeof interaction.id === 'undefined') {
+      this.sentInteractionCount += 1
+      interaction.id = this.sentInteractionCount
+    }
+
+    this._socket.write(JSON.stringify(interaction))
   }
 
   parseInteraction (data) {
