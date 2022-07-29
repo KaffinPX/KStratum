@@ -1,6 +1,4 @@
 #! /usr/bin/env node
-require("modernlog/patch")
-
 const Client = require('./src/kaspa/client')
 const Hasher = require('./src/kaspa/hasher')
 const Server = require('./src/stratum/server')
@@ -23,6 +21,7 @@ Default node: ${params.node}
 Default port: ${params.port}`)
   process.exit(1)
 }
+require("modernlog/patch")
 
 for(let i = 2; i < process.argv.length; i++) {
   const arg = process.argv[i]
