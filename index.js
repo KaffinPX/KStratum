@@ -12,7 +12,7 @@ const params = {
 }
 
 const NODE_REGEX = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$/
-const ADDRESS_REGEX = /kaspa(dev|testnet|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/
+const ADDRESS_REGEX = /kaspa(dev|test|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/
 
 if(process.argv.length < 3) {
   console.log(`Usage: npx kstratum --node {ip:port} --address <address> --port {port}
