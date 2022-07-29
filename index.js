@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 require("modernlog/patch")
 
 const Client = require('./src/kaspa/client')
