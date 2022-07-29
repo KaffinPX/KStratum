@@ -13,7 +13,6 @@ const params = {
   port: 6942
 }
 
-const NODE_REGEX = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$/
 const ADDRESS_REGEX = /kaspa(dev|test|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/
 
 if (process.argv.length < 3) {
@@ -42,10 +41,6 @@ for (let i = 2; i < process.argv.length; i++) {
 
   switch (key) {
     case 'node': {
-      if (!NODE_REGEX.test(value)) {
-        console.error(`Invalid --node parameter: ${value}`)
-        process.exit(1)
-      }
       params.node = value
       break
     }
