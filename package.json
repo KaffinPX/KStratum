@@ -22,6 +22,10 @@
   "dependencies": {
     "blakejs": "^1.2.1",
     "kaspajs": "github:GateKVite/kaspajs",
+    "modernlog": "^1.0.2",
     "python-struct": "^1.1.3"
+  },
+  "bin": {
+    "kstratum": "index.js"
   }
 }
