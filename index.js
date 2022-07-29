@@ -15,13 +15,6 @@ const params = {
 
 const ADDRESS_REGEX = /kaspa(dev|test|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/
 
-if (process.argv.length < 3) {
-  console.log(`Usage: npx kstratum --node {ip:port} --address <address> --port {port}
-
-Default node: ${params.node}
-Default port: ${params.port}`)
-  process.exit(1)
-}
 require('modernlog/patch')
 
 for (let i = 2; i < process.argv.length; i++) {
@@ -143,9 +136,7 @@ client.on('ready', () => {
 
     jobs.set(jobId, blockTemplate.block)
 
-    const exponent = 10n ** 20n
-    const kaspaDifficulty = BigInt(Math.floor(block.block.verboseData.difficulty)) * exponent
-    const difficulty = Number(kaspaDifficulty / (2n ** 31n)) / Number(exponent)
+    const difficulty = block.block.verboseData.difficulty / 2 ** 31
     
     if (lastDifficulty !== difficulty) {
       lastDifficulty = difficulty
