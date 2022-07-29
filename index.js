@@ -8,7 +8,7 @@ const Server = require('./src/stratum/server')
 const interactions = require('./src/stratum/interactions')
 
 const params = {
-  node: '164.92.190.13:16110',
+  node: '79.120.76.62:16210',
   address: '',
   port: 6942
 }
@@ -64,11 +64,6 @@ for (let i = 2; i < process.argv.length; i++) {
       params.port = number
     }
   }
-}
-
-if (!params.address) {
-  console.error('Missing --address parameter')
-  process.exit(1)
 }
 
 console.log(`Running kstratum for \x1b[33m${params.address}\x1b[0m`)
