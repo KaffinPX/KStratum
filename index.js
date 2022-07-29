@@ -21,6 +21,7 @@ client.on('ready', () => {
   })
 
   const jobs = new Map()
+  let lastDifficulty = 10
 
   server.on('peer', (peer) => {
     peer.on('interaction', (interaction) => {
@@ -28,7 +29,7 @@ client.on('ready', () => {
         peers.add(peer)
       } else if (interaction.method === 'authorize') {
         peer.sendInteraction(new interactions.setExtranonce((require('crypto')).randomBytes(2).toString('hex')))
-        peer.sendInteraction(new interactions.setDifficulty(4))
+        peer.sendInteraction(new interactions.setDifficulty(lastDifficulty))
         peer.sendInteraction(new interactions.Answer(interaction.id, true))
       } else if (interaction.method === 'submit') {
         const block = jobs.get(interaction.params[1])
@@ -49,7 +50,6 @@ client.on('ready', () => {
   })
 
   client.kaspa.subscribe('notifyBlockAddedRequest', {}, async (block) => {
-    console.log(block)
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
       payAddress: miningAddress,
       extraData: 'KStratum: Coded by KaffinPX & jwj & Not Thomiz'
@@ -66,6 +66,14 @@ client.on('ready', () => {
     }
 
     jobs.set(jobId, blockTemplate.block)
+
+    if (lastDifficulty !== Number(Math.ceil(block.block.verboseData.difficulty).toString()[0]) + 1) {
+      lastDifficulty = Number(Math.ceil(block.block.verboseData.difficulty).toString()[0]) + 1
+
+      peers.forEach(peer => {
+        peer.sendInteraction(new interactions.setDifficulty(lastDifficulty))
+      })
+    }
 
     peers.forEach(peer => {
       peer.sendInteraction(new interactions.Notify(jobId.toString(), [ job[0].toString(), job[1].toString(), job[2].toString(), job[3].toString() ], blockTemplate.block.header.timestamp))

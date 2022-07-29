@@ -4,7 +4,7 @@ const server = net.createServer()
 
 server.on('connection', (socket) => {
   const client = new net.Socket();
-  client.connect(6943, 'localhost')
+  client.connect(6942, 'localhost')
 
   client.on('data', (data) => {
     console.log('From mining pool:', data.toString())
@@ -20,7 +20,7 @@ server.on('connection', (socket) => {
 })
 
 server.on('listening', () => {
-  console.log('Listening!')
+  console.log('Listening for possible proxying!')
 })
 
-server.listen(6942, '127.0.0.1')
+server.listen(6943, '127.0.0.1')
