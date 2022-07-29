@@ -14,7 +14,7 @@ const miningAddress = 'kaspa:qrevg3fkad49s7hcg9ry7262kpfpxkrga2sywwkcn2kz3u2nkte
 client.on('ready', () => {
   console.log('Connected to Kaspa node, starting stratum...')
 
-  const server = new Server(6942)
+  const server = new Server(6943)
 
   server.on('listening', () => {
     console.log(`Stratum server listening on ${server.server.address().port}`)
@@ -25,15 +25,14 @@ client.on('ready', () => {
       if (interaction.method === 'subscribe') {
         peers.add(peer)
       } else if (interaction.method === 'authorize') {
-        peer.sendInteraction(new interactions.Answer(interaction.id, true))
-        peer.sendInteraction(new interactions.setExtranonce(require('crypto').randomBytes(2).toString('hex')))
+        peer.sendInteraction(new interactions.setExtranonce((require('crypto')).randomBytes(2).toString('hex')))
         peer.sendInteraction(new interactions.setDifficulty(4))
+        peer.sendInteraction(new interactions.Answer(interaction.id, true))
       }
     })
   })
 
   const jobs = new Map()
-  let lastDifficulty
 
   client.kaspa.subscribe('notifyBlockAddedRequest', {}, async () => {
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
@@ -48,7 +47,7 @@ client.on('ready', () => {
     jobs.set(jobId, blockTemplate.block)
 
     peers.forEach(peer => {
-      peer.sendInteraction(new interactions.Notify(jobId, [ job[0].toString(), job[1].toString(), job[2].toString(), job[3].toString() ], blockTemplate.block.header.timestamp))
+      peer.sendInteraction(new interactions.Notify(jobId.toString(), [ job[0].toString(), job[1].toString(), job[2].toString(), job[3].toString() ], blockTemplate.block.header.timestamp))
     })
   })
 })

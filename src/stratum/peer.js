@@ -21,14 +21,14 @@ module.exports = class Peer extends events.EventEmitter {
       jsonInteraction.id = this.sentInteractionCount
     }
 
-    const interactionCall = JSON.stringify(jsonInteraction)
+    let interactionCall = JSON.stringify(jsonInteraction)
 
     if (typeof interaction.jobId !== 'undefined') {
-      interactionCall.replace(`"${interaction.job[0]}"`, interaction.job[0])
-      interactionCall.replace(`"${interaction.job[1]}"`, interaction.job[1])
-      interactionCall.replace(`"${interaction.job[2]}"`, interaction.job[2])
-      interactionCall.replace(`"${interaction.job[3]}"`, interaction.job[3])
-      console.log(interactionCall)
+      interactionCall = interactionCall.replace(`"${interaction.job[0]}"`, interaction.job[0])
+      interactionCall = interactionCall.replace(`"${interaction.job[1]}"`, interaction.job[1])
+      interactionCall = interactionCall.replace(`"${interaction.job[2]}"`, interaction.job[2])
+      interactionCall = interactionCall.replace(`"${interaction.job[3]}"`, interaction.job[3])
+      interactionCall = interactionCall.replace(`"${interaction.timestamp}"`, interaction.timestamp)
     }
 
     this._socket.write(interactionCall)
