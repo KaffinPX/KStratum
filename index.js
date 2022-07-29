@@ -1,4 +1,6 @@
 #! /usr/bin/env node
+process.on("unhandledRejection", console.error)
+
 const Client = require('./src/kaspa/client')
 const Hasher = require('./src/kaspa/hasher')
 const Server = require('./src/stratum/server')
@@ -109,18 +111,21 @@ client.on('ready', () => {
         peer.sendInteraction(new interactions.setDifficulty(lastDifficulty))
         peer.sendInteraction(new interactions.Answer(interaction.id, true))
       } else if (interaction.method === 'submit') {
-        const block = jobs.get(interaction.params[1]) 
+        const block = jobs.get(Number(interaction.params[1]))
         if (typeof block === 'undefined') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
-        block.header.nonce = interaction.params[2]
+        block.header.nonce = BigInt(interaction.params[2]).toString()
 
         client.kaspa.request('submitBlockRequest', {
           block,
           allowNonDAABlocks: false
         }).then(result => {
-          if (!result.rejectReason !== 0) return peer.sendInteraction(new interactions.Answer(interaction.id, false))
+          if (result.rejectReason !== 0) return peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
           peer.sendInteraction(new interactions.Answer(interaction.id, true))
+        }).catch(err => {
+          console.error(err)
+          peer.sendInteraction(new interactions.Answer(interaction.id, false))
         })
       }
     })
@@ -144,8 +149,11 @@ client.on('ready', () => {
 
     jobs.set(jobId, blockTemplate.block)
 
-    if (lastDifficulty !== Number(BigInt(Math.floor(block.block.verboseData.difficulty)) / (2n ** 31n))) {
-      lastDifficulty = Number(BigInt(Math.floor(block.block.verboseData.difficulty)) / (2n ** 31n))
+    const exponent = 10n**20n
+    const kaspaDifficulty = BigInt(Math.floor(block.block.verboseData.difficulty)) * exponent
+    const difficulty = Number(kaspaDifficulty / (2n ** 31n)) / Number(exponent)
+    if (lastDifficulty !== difficulty) {
+      lastDifficulty = difficulty
 
       peers.forEach(peer => {
         peer.sendInteraction(new interactions.setDifficulty(lastDifficulty))
