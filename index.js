@@ -9,7 +9,7 @@ const interactions = require('./src/stratum/interactions')
 
 const params = {
   node: '79.120.76.62:16210',
-  address: '',
+  address: 'kaspatest:qrap0pn389g42eltya6ezvd3e56nkyuu3w3cmgpdsqkaafy52x922nzv4nnh4',
   port: 6942
 }
 
