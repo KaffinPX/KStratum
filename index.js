@@ -34,6 +34,7 @@ for (let i = 2; i < process.argv.length; i++) {
   const key = arg.slice(2)
   i++
   const value = process.argv[i]
+
   if (!value || value.startsWith('--')) {
     console.error(`Invalid parameter value: ${key}:${value}`)
     process.exit(1)
@@ -49,6 +50,7 @@ for (let i = 2; i < process.argv.length; i++) {
         console.error(`Invalid --address parameter: ${value}`)
         process.exit(1)
       }
+
       params.address = value
       break
     }
@@ -58,6 +60,7 @@ for (let i = 2; i < process.argv.length; i++) {
         console.error(`Invalid --port parameter: ${value}`)
         process.exit(1)
       }
+
       params.port = number
     }
   }
@@ -70,6 +73,7 @@ if (!params.address) {
 
 console.log(`Running kstratum for \x1b[33m${params.address}\x1b[0m`)
 console.info(`Connecting to node \x1b[33m${params.node}\x1b[0m`)
+
 const client = new Client(params.node)
 const hasher = new Hasher()
 
@@ -147,6 +151,7 @@ client.on('ready', () => {
     const exponent = 10n ** 20n
     const kaspaDifficulty = BigInt(Math.floor(block.block.verboseData.difficulty)) * exponent
     const difficulty = Number(kaspaDifficulty / (2n ** 31n)) / Number(exponent)
+    
     if (lastDifficulty !== difficulty) {
       lastDifficulty = difficulty
 
