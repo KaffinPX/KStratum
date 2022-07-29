@@ -1,9 +1,9 @@
-const net = require('net');
+const net = require('net')
 
 const server = net.createServer()
 
 server.on('connection', (socket) => {
-  const client = new net.Socket();
+  const client = new net.Socket()
   client.connect(6942, 'localhost')
 
   client.on('data', (data) => {
@@ -12,7 +12,7 @@ server.on('connection', (socket) => {
     socket.write(data)
   })
 
-	socket.on('data', (data) => {
+  socket.on('data', (data) => {
     console.log('From miner:', data.toString())
 
     client.write(data)

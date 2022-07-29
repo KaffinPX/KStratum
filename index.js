@@ -1,5 +1,5 @@
 #! /usr/bin/env node
-process.on("unhandledRejection", console.error)
+process.on('unhandledRejection', console.error)
 
 const Client = require('./src/kaspa/client')
 const Hasher = require('./src/kaspa/hasher')
@@ -16,50 +16,50 @@ const params = {
 const NODE_REGEX = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}$/
 const ADDRESS_REGEX = /kaspa(dev|test|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/
 
-if(process.argv.length < 3) {
+if (process.argv.length < 3) {
   console.log(`Usage: npx kstratum --node {ip:port} --address <address> --port {port}
 
 Default node: ${params.node}
 Default port: ${params.port}`)
   process.exit(1)
 }
-require("modernlog/patch")
+require('modernlog/patch')
 
-for(let i = 2; i < process.argv.length; i++) {
+for (let i = 2; i < process.argv.length; i++) {
   const arg = process.argv[i]
-  if(!arg.startsWith('--')) {
+  if (!arg.startsWith('--')) {
     console.error(`Invalid argument: ${arg}`)
     process.exit(1)
   }
 
   const key = arg.slice(2)
   i++
-  let value = process.argv[i]
-  if(!value || value.startsWith('--')){
+  const value = process.argv[i]
+  if (!value || value.startsWith('--')) {
     console.error(`Invalid parameter value: ${key}:${value}`)
     process.exit(1)
   }
 
-  switch(key){
-    case "node": {
-      if(!NODE_REGEX.test(value)){
+  switch (key) {
+    case 'node': {
+      if (!NODE_REGEX.test(value)) {
         console.error(`Invalid --node parameter: ${value}`)
         process.exit(1)
       }
       params.node = value
       break
     }
-    case "address": {
-      if(!ADDRESS_REGEX.test(value)){
+    case 'address': {
+      if (!ADDRESS_REGEX.test(value)) {
         console.error(`Invalid --address parameter: ${value}`)
         process.exit(1)
       }
       params.address = value
       break
     }
-    case "port": {
+    case 'port': {
       const number = parseInt(value)
-      if(isNaN(number) || number < 1 || number > 65535){
+      if (isNaN(number) || number < 1 || number > 65535) {
         console.error(`Invalid --port parameter: ${value}`)
         process.exit(1)
       }
@@ -68,7 +68,7 @@ for(let i = 2; i < process.argv.length; i++) {
   }
 }
 
-if(!params.address){
+if (!params.address) {
   console.error('Missing --address parameter')
   process.exit(1)
 }
@@ -90,10 +90,10 @@ client.on('ready', () => {
   })
 
   server.on('error', (err) => {
-    if(err.code === "EACCES"){
+    if (err.code === 'EACCES') {
       console.error(`Failed to listen to port ${err.address}:${err.port}`)
       console.error(err.message)
-    }else{
+    } else {
       console.error(err)
     }
     process.exit(1)
@@ -149,7 +149,7 @@ client.on('ready', () => {
 
     jobs.set(jobId, blockTemplate.block)
 
-    const exponent = 10n**20n
+    const exponent = 10n ** 20n
     const kaspaDifficulty = BigInt(Math.floor(block.block.verboseData.difficulty)) * exponent
     const difficulty = Number(kaspaDifficulty / (2n ** 31n)) / Number(exponent)
     if (lastDifficulty !== difficulty) {
@@ -161,7 +161,7 @@ client.on('ready', () => {
     }
 
     peers.forEach(peer => {
-      peer.sendInteraction(new interactions.Notify(jobId.toString(), [ job[0].toString(), job[1].toString(), job[2].toString(), job[3].toString() ], blockTemplate.block.header.timestamp))
+      peer.sendInteraction(new interactions.Notify(jobId.toString(), [job[0].toString(), job[1].toString(), job[2].toString(), job[3].toString()], blockTemplate.block.header.timestamp))
     })
   })
 })
