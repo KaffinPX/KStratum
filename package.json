@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/KaffinPX/KStratum#readme",
   "dependencies": {
-    "kaspajs": "github:GateKVite/kaspajs"
+    "blakejs": "^1.2.1",
+    "kaspajs": "github:GateKVite/kaspajs",
+    "python-struct": "^1.1.3"
   }
 }

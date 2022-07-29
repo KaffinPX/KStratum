@@ -6,8 +6,8 @@ class setExtranonce {
 
   toJSON () {
     return {
-      method: "set_extranonce",
-      params: [ this.nonce, this.reservedBytes ]
+      method: 'set_extranonce',
+      params: [this.nonce, this.reservedBytes]
     }
   }
 }
@@ -19,8 +19,8 @@ class setDifficulty {
 
   toJSON () {
     return {
-      method: "mining.set_difficulty",
-      params: [ this.difficulty ]
+      method: 'mining.set_difficulty',
+      params: [this.difficulty]
     }
   }
 }
@@ -34,8 +34,8 @@ class Notify {
 
   toJSON () {
     return {
-      method: "mining.notify",
-      params: [ this.jobId, this.job, this.timestamp ]
+      method: 'mining.notify',
+      params: [this.jobId, this.job, this.timestamp]
     }
   }
 }

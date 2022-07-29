@@ -7,7 +7,7 @@ module.exports = class Peer extends events.EventEmitter {
     this._socket = socket
 
     this.sentInteractionCount = 0
-    this.onGoingData = ""
+    this.onGoingData = ''
 
     this._socket.on('data', (data) => this.handleStream(data))
     this._socket.on('error', (err) => (err))
@@ -21,17 +21,27 @@ module.exports = class Peer extends events.EventEmitter {
       jsonInteraction.id = this.sentInteractionCount
     }
 
-    this._socket.write(JSON.stringify(jsonInteraction))
+    const interactionCall = JSON.stringify(jsonInteraction)
+
+    if (typeof interaction.jobId !== 'undefined') {
+      interactionCall.replace(`"${interaction.job[0]}"`, interaction.job[0])
+      interactionCall.replace(`"${interaction.job[1]}"`, interaction.job[1])
+      interactionCall.replace(`"${interaction.job[2]}"`, interaction.job[2])
+      interactionCall.replace(`"${interaction.job[3]}"`, interaction.job[3])
+      console.log(interactionCall)
+    }
+
+    this._socket.write(interactionCall)
   }
 
   parseInteraction (data) {
     const interaction = JSON.parse(data)
-    
+
     interaction.method = interaction.method.replace('mining.', '')
 
     return interaction
   }
-  
+
   handleStream (data) {
     this.onGoingData += data.toString()
 
@@ -46,7 +56,7 @@ module.exports = class Peer extends events.EventEmitter {
         } catch (err) { this._socket.end('INVALID_INTERACTION') }
       })
 
-      this.onGoingData = this.onGoingData.split('}')?.[1] ?? ""
+      this.onGoingData = this.onGoingData.split('}')?.[1] ?? ''
     }
   }
 }
