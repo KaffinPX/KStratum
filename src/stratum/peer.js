@@ -31,7 +31,7 @@ module.exports = class Peer extends events.EventEmitter {
       interactionCall = interactionCall.replace(`"${interaction.timestamp}"`, interaction.timestamp)
     }
 
-    this._socket.write(interactionCall)
+    this._socket.write(interactionCall + '\n')
   }
 
   parseInteraction (data) {

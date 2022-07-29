@@ -14,11 +14,13 @@ const miningAddress = 'kaspa:qrevg3fkad49s7hcg9ry7262kpfpxkrga2sywwkcn2kz3u2nkte
 client.on('ready', () => {
   console.log('Connected to Kaspa node, starting stratum...')
 
-  const server = new Server(6943)
+  const server = new Server(6942)
 
   server.on('listening', () => {
     console.log(`Stratum server listening on ${server.server.address().port}`)
   })
+
+  const jobs = new Map()
 
   server.on('peer', (peer) => {
     peer.on('interaction', (interaction) => {
@@ -28,13 +30,26 @@ client.on('ready', () => {
         peer.sendInteraction(new interactions.setExtranonce((require('crypto')).randomBytes(2).toString('hex')))
         peer.sendInteraction(new interactions.setDifficulty(4))
         peer.sendInteraction(new interactions.Answer(interaction.id, true))
+      } else if (interaction.method === 'submit') {
+        const block = jobs.get(interaction.params[1])
+        if (typeof block === 'undefined') return
+
+        block.header.nonce = interaction.params[2]
+
+        client.kaspa.request('submitBlockRequest', {
+          block,
+          allowNonDAABlocks: false
+        }).then(result => {
+          if (!result.rejectReason !== 0) return peer.sendInteraction(new interactions.Answer(interaction.id, false))
+
+          peer.sendInteraction(new interactions.Answer(interaction.id, true))
+        })
       }
     })
   })
 
-  const jobs = new Map()
-
-  client.kaspa.subscribe('notifyBlockAddedRequest', {}, async () => {
+  client.kaspa.subscribe('notifyBlockAddedRequest', {}, async (block) => {
+    console.log(block)
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
       payAddress: miningAddress,
       extraData: 'KStratum: Coded by KaffinPX & jwj & Not Thomiz'
@@ -43,7 +58,13 @@ client.on('ready', () => {
     const header = hasher.serializeHeader(blockTemplate.block.header, true)
     const job = hasher.serializeJobData(header)
 
-    const jobId = (Array.from(jobs.entries()).pop()?.[0] ?? 0) + 1
+    let jobId = (Array.from(jobs.entries()).pop()?.[0] ?? 0) + 1
+
+    if (jobId >= 99) {
+      jobs.clear()
+      jobId = 1
+    }
+
     jobs.set(jobId, blockTemplate.block)
 
     peers.forEach(peer => {
