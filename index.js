@@ -32,8 +32,8 @@ client.on('ready', () => {
         peer.sendInteraction(new interactions.setDifficulty(lastDifficulty))
         peer.sendInteraction(new interactions.Answer(interaction.id, true))
       } else if (interaction.method === 'submit') {
-        const block = jobs.get(interaction.params[1])
-        if (typeof block === 'undefined') return
+        const block = jobs.get(interaction.params[1]) 
+        if (typeof block === 'undefined') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
         block.header.nonce = interaction.params[2]
 
@@ -67,8 +67,8 @@ client.on('ready', () => {
 
     jobs.set(jobId, blockTemplate.block)
 
-    if (lastDifficulty !== Number(Math.ceil(block.block.verboseData.difficulty).toString()[0]) + 1) {
-      lastDifficulty = Number(Math.ceil(block.block.verboseData.difficulty).toString()[0]) + 1
+    if (lastDifficulty !== Number(BigInt(Math.floor(block.block.verboseData.difficulty)) / (2n ** 31n))) {
+      lastDifficulty = Number(BigInt(Math.floor(block.block.verboseData.difficulty)) / (2n ** 31n))
 
       peers.forEach(peer => {
         peer.sendInteraction(new interactions.setDifficulty(lastDifficulty))
