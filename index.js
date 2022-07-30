@@ -66,26 +66,27 @@ client.on('ready', () => {
     })
   })
 
+  const isSeenTemplate = new Set()
+
   client.kaspa.subscribe('notifyBlockAddedRequest', {}, async (block) => {
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
       payAddress: operator.address,
       extraData: 'KStratum: Coded by KaffinPX & jwj & Not Thomiz'
     })
 
-    if (!blockTemplate.isSynced) {
-      console.error(`Node is not synced.`)
-      process.exit(1)
-    }
+    if (!blockTemplate.isSynced) { console.error(`Node is not synced.`); process.exit(1) }
 
     const header = hasher.serializeHeader(blockTemplate.block.header, true)
-    const job = hasher.serializeJobData(header)
 
+    if (isSeenTemplate.has(header)) return
+
+    isSeenTemplate.add(header)
+    setTimeout(() => { isSeenTemplate.delete(header) }, 10 * 1000)
+
+    const job = hasher.serializeJobData(header)
     let jobId = (Array.from(jobs.entries()).pop()?.[0] ?? 0) + 1
 
-    if (jobId >= 99) {
-      jobs.clear()
-      jobId = 1
-    }
+    if (jobId >= 99) { jobs.clear(); jobId = 1 }
 
     jobs.set(jobId, blockTemplate.block)
 
