@@ -59,9 +59,11 @@ client.on('ready', () => {
           if (result.rejectReason !== 'NONE') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
           const hash = hasher.serializeHeader(block.header, false)
-          let blockReward = 0n
-          block.transactions[0].outputs.forEach(output => {
-            blockReward += BigInt(output.amount)
+          let blockReward = block.transactions[0].outputs[0].amount
+          block.transactions[0].outputs.Slice(1).forEach(output => {
+                if (output.verboseData.scriptPublicKeyAddress == block.transactions[0].outputs[0].verboseData.scriptPublicKeyAddress) {
+                        blockReward += BigInt(output.amount)
+                }
           })
           
           console.log(`Accepted block \x1b[33m${hash.toString('hex')}\x1b[0m, mined \x1b[33m${blockReward / BigInt(1e8)}\x1b[0m KAS!`)
