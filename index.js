@@ -7,7 +7,7 @@ const interactions = require('./src/stratum/interactions')
 
 const operator = new Operator(process.argv)
 
-console.log(`Running kstratum for \x1b[33m${operator.address}\x1b[0m`)
+console.log(`Running KStratum for \x1b[33m${operator.address}\x1b[0m`)
 console.info(`Connecting to node \x1b[33m${operator.node}\x1b[0m`)
 
 const client = new Client(operator.node)
@@ -71,6 +71,11 @@ client.on('ready', () => {
       payAddress: operator.address,
       extraData: 'KStratum: Coded by KaffinPX & jwj & Not Thomiz'
     })
+
+    if (!blockTemplate.isSynced) {
+      console.error(`Node is not synced.`)
+      process.exit(1)
+    }
 
     const header = hasher.serializeHeader(blockTemplate.block.header, true)
     const job = hasher.serializeJobData(header)
