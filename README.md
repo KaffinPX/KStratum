@@ -11,7 +11,7 @@
 Install NodeJS 16 from [here](https://nodejs.org/) and run KStratum by ``npx kstratum@latest <arguments>`` on command line.
 
 ### Arguments
-* ``--node <address>``: Switchs to another node. Default: `79.120.76.62:16110`
+* ``--node <ip/domain:port>``: Switchs to another node. Default: `79.120.76.62:16110`
 * ``--address <address>``: Sets mining address.
 * ``--port <port>``: Sets Stratum listening port. Default: `16112`
 * ``--listen-address <ip/domain>``: Sets Stratum listening address. Default: `127.0.0.1`
