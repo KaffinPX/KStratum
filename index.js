@@ -1,3 +1,4 @@
+#!/usr/bin/node
 const Operator = require('./src/operator')
 const Client = require('./src/kaspa/client')
 const Hasher = require('./src/kaspa/hasher')
