@@ -8,7 +8,7 @@ module.exports = class Process {
     this.address = env['address']
     this.port = env['port'] ?? 16112
 
-    if (!address || !/kaspa(dev|test|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/.test(this.address)) {
+    if (!this.address || !/kaspa(dev|test|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/.test(this.address)) {
       console.error('Invalid address parameter')
       process.exit(1)
     }
