@@ -4,7 +4,7 @@ const events = require('events')
 const Peer = require('./peer')
 
 module.exports = class stratumServer extends events.EventEmitter {
-  constructor (port) {
+  constructor (port, listenAddress) {
     super()
 
     this.server = net.createServer()
@@ -13,7 +13,7 @@ module.exports = class stratumServer extends events.EventEmitter {
     this.server.on('listening', () => this.emit('listening'))
     this.server.on('error', (err) => this.emit('error', err))
 
-    this.server.listen(port, '127.0.0.1')
+    this.server.listen(port, listenAddress)
   }
 
   handleConnection (socket) {

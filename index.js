@@ -19,10 +19,10 @@ const peers = new Set()
 client.on('ready', () => {
   console.log('Connected to Kaspa node, starting stratum...')
 
-  const server = new Server(operator.port)
+  const server = new Server(operator.port, operator.listenAddress)
 
   server.on('listening', () => {
-    console.log(`Stratum server listening on \x1b[33m${server.server.address().port}\x1b[0m`)
+    console.log(`Stratum server listening on \x1b[33m${server.server.address().address}:${server.server.address().port}\x1b[0m`)
   })
 
   server.on('error', (err) => {

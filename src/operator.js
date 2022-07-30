@@ -7,6 +7,7 @@ module.exports = class Process {
     this.node = env['node'] ?? '79.120.76.62:16110'
     this.address = env['address']
     this.port = env['port'] ?? 16112
+    this.listenAddress = env['listen-address'] ?? '127.0.0.1'
 
     if (!this.address || !/kaspa(dev|test|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/.test(this.address)) {
       console.error('Invalid address parameter')
