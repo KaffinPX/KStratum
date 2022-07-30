@@ -1,7 +1,7 @@
 {
   "name": "kstratum",
   "version": "0.2.0",
-  "description": "Stratum implementation for Kaspa",
+  "description": "Stratum adapter for Kaspa",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
