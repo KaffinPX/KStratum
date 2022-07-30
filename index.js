@@ -107,7 +107,7 @@ client.on('ready', () => {
           block,
           allowNonDAABlocks: false
         }).then(result => {
-          if (result.rejectReason !== 0) return peer.sendInteraction(new interactions.Answer(interaction.id, false))
+          if (result.rejectReason !== 'NONE') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
           peer.sendInteraction(new interactions.Answer(interaction.id, true))
         }).catch(err => {
@@ -124,8 +124,8 @@ client.on('ready', () => {
       extraData: 'KStratum: Coded by KaffinPX & jwj & Not Thomiz'
     })
 
-    const header = hasher.serializeHeader(blockTemplate.block.header, true)
-    const job = hasher.serializeJobData(header)
+    const pre_pow_hash = hasher.serializeHeader(blockTemplate.block.header, true)
+    const job = hasher.serializeJobData(pre_pow_hash)
 
     let jobId = (Array.from(jobs.entries()).pop()?.[0] ?? 0) + 1
 

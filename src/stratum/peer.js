@@ -53,7 +53,10 @@ module.exports = class Peer extends events.EventEmitter {
 
         try {
           this.emit('interaction', this.parseInteraction('{' + interaction))
-        } catch (err) { this._socket.end('INVALID_INTERACTION') }
+        } catch (err) {
+          console.error(err)
+          this._socket.end('INVALID_INTERACTION')
+        }
       })
 
       this.onGoingData = this.onGoingData.split('}')?.[1] ?? ''
