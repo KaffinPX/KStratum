@@ -8,8 +8,7 @@
 * Supports multiple networks(Testnet, mainnet...).
 
 ## Usage
-Install NodeJS 16 from [here](https://nodejs.org/)
-Run KStratum by ``npx kstratum <arguments>``
+Install NodeJS 16 from [here](https://nodejs.org/) and run KStratum by ``npx kstratum <arguments>`` on command line.
 
 ### Arguments
 * ``--node <address>``: Switchs to another node. Default: `79.120.76.62:16210`
