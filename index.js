@@ -1,68 +1,16 @@
-#! /usr/bin/env node
-process.on('unhandledRejection', console.error)
-
+const Operator = require('./src/operator')
 const Client = require('./src/kaspa/client')
 const Hasher = require('./src/kaspa/hasher')
 const Server = require('./src/stratum/server')
 
 const interactions = require('./src/stratum/interactions')
 
-const params = {
-  node: '79.120.76.62:16210',
-  address: 'kaspatest:qrap0pn389g42eltya6ezvd3e56nkyuu3w3cmgpdsqkaafy52x922nzv4nnh4',
-  port: 6942
-}
+const operator = new Operator(process.argv)
 
-const ADDRESS_REGEX = /kaspa(dev|test|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/
+console.log(`Running kstratum for \x1b[33m${operator.address}\x1b[0m`)
+console.info(`Connecting to node \x1b[33m${operator.node}\x1b[0m`)
 
-require('modernlog/patch')
-
-for (let i = 2; i < process.argv.length; i++) {
-  const arg = process.argv[i]
-  if (!arg.startsWith('--')) {
-    console.error(`Invalid argument: ${arg}`)
-    process.exit(1)
-  }
-
-  const key = arg.slice(2)
-  i++
-  const value = process.argv[i]
-
-  if (!value || value.startsWith('--')) {
-    console.error(`Invalid parameter value: ${key}:${value}`)
-    process.exit(1)
-  }
-
-  switch (key) {
-    case 'node': {
-      params.node = value
-      break
-    }
-    case 'address': {
-      if (!ADDRESS_REGEX.test(value)) {
-        console.error(`Invalid --address parameter: ${value}`)
-        process.exit(1)
-      }
-
-      params.address = value
-      break
-    }
-    case 'port': {
-      const number = parseInt(value)
-      if (isNaN(number) || number < 1 || number > 65535) {
-        console.error(`Invalid --port parameter: ${value}`)
-        process.exit(1)
-      }
-
-      params.port = number
-    }
-  }
-}
-
-console.log(`Running kstratum for \x1b[33m${params.address}\x1b[0m`)
-console.info(`Connecting to node \x1b[33m${params.node}\x1b[0m`)
-
-const client = new Client(params.node)
+const client = new Client(operator.node)
 const hasher = new Hasher()
 
 const peers = new Set()
@@ -70,7 +18,7 @@ const peers = new Set()
 client.on('ready', () => {
   console.log('Connected to Kaspa node, starting stratum...')
 
-  const server = new Server(params.port)
+  const server = new Server(operator.port)
 
   server.on('listening', () => {
     console.log(`Stratum server listening on \x1b[33m${server.server.address().port}\x1b[0m`)
@@ -107,7 +55,7 @@ client.on('ready', () => {
           block,
           allowNonDAABlocks: false
         }).then(result => {
-          if (result.rejectReason !== 'NONE') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
+          if (result.rejectReason !== 0) return peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
           peer.sendInteraction(new interactions.Answer(interaction.id, true))
         }).catch(err => {
@@ -120,12 +68,12 @@ client.on('ready', () => {
 
   client.kaspa.subscribe('notifyBlockAddedRequest', {}, async (block) => {
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
-      payAddress: params.address,
+      payAddress: operator.address,
       extraData: 'KStratum: Coded by KaffinPX & jwj & Not Thomiz'
     })
 
-    const pre_pow_hash = hasher.serializeHeader(blockTemplate.block.header, true)
-    const job = hasher.serializeJobData(pre_pow_hash)
+    const header = hasher.serializeHeader(blockTemplate.block.header, true)
+    const job = hasher.serializeJobData(header)
 
     let jobId = (Array.from(jobs.entries()).pop()?.[0] ?? 0) + 1
 
