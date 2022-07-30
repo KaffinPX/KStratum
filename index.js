@@ -56,8 +56,9 @@ client.on('ready', () => {
           block,
           allowNonDAABlocks: false
         }).then(result => {
-          if (result.rejectReason !== 0) return peer.sendInteraction(new interactions.Answer(interaction.id, false))
+          if (result.rejectReason !== 'NONE') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
+          console.log(`Block accepted`)
           peer.sendInteraction(new interactions.Answer(interaction.id, true))
         }).catch(err => {
           console.error(err)
@@ -85,7 +86,8 @@ client.on('ready', () => {
     setTimeout(() => { isSeenTemplate.delete(header) }, 10 * 1000)
 
     const job = hasher.serializeJobData(header)
-    let jobId = (Array.from(jobs.entries()).pop()?.[0] ?? 0) + 1
+    const jobId1 = Array.from(jobs.entries()).pop()
+    let jobId = (jobId1 && jobId1[0] || 0) + 1
 
     if (jobId >= 99) { jobs.clear(); jobId = 1 }
 

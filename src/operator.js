@@ -25,7 +25,7 @@ const parseEnv = (argv) => {
       executedCommands[data.replace('--', '')] = null
     } else {
       const beforeData = argv[arg - 1]
-      if (typeof executedCommands[beforeData?.replace('--', '')] !== 'undefined') {
+      if (typeof executedCommands[beforeData && beforeData.replace('--', '')] !== 'undefined') {
         executedCommands[beforeData.replace('--', '')] = data
       }
     } 

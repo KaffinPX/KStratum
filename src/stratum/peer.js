@@ -59,7 +59,8 @@ module.exports = class Peer extends events.EventEmitter {
         }
       })
 
-      this.onGoingData = this.onGoingData.split('}')?.[1] ?? ''
+      const e = this.onGoingData.split('}')
+      this.onGoingData = e && e[1] || ''
     }
   }
 }
