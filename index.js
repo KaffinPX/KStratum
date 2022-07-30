@@ -59,9 +59,9 @@ client.on('ready', () => {
           if (result.rejectReason !== 'NONE') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
           const hash = hasher.serializeHeader(block.header, false)
-          let blockReward = block.transactions[0].outputs[0].amount
-          block.transactions[0].outputs.Slice(1).forEach(output => {
-                if (output.verboseData.scriptPublicKeyAddress.equals(block.transactions[0].outputs[0].verboseData.scriptPublicKeyAddress)) {
+          let blockReward = 0n
+          block.transactions[0].outputs.forEach(output => {
+                if (output.verboseData.scriptPublicKeyAddress.equals(operator.address)) {
                         blockReward += BigInt(output.amount)
                 }
           })
