@@ -58,7 +58,14 @@ client.on('ready', () => {
         }).then(result => {
           if (result.rejectReason !== 'NONE') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
-          console.log(`Block accepted`)
+          const hash = hasher.serializeHeader(block.header, false)
+          let blockReward = 0n
+          block.transactions[0].outputs.forEach(output => {
+            blockReward += BigInt(output.amount)
+          })
+          
+          console.log(`Accepted block \x1b[33m${hash.toString('hex')}\x1b[0m, mined \x1b[33m${blockReward / BigInt(1e8)}\x1b[0m KAS!`)
+
           peer.sendInteraction(new interactions.Answer(interaction.id, true))
         }).catch(err => {
           console.error(err)
@@ -86,8 +93,8 @@ client.on('ready', () => {
     setTimeout(() => { isSeenTemplate.delete(header) }, 10 * 1000)
 
     const job = hasher.serializeJobData(header)
-    const jobId1 = Array.from(jobs.entries()).pop()
-    let jobId = (jobId1 && jobId1[0] || 0) + 1
+    const lastJob = Array.from(jobs.entries()).pop()
+    let jobId = (lastJob && lastJob[0] || 0) + 1
 
     if (jobId >= 99) { jobs.clear(); jobId = 1 }
 

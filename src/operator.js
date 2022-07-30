@@ -1,6 +1,6 @@
 require('modernlog/patch')
 
-module.exports = class Process {
+module.exports = class Operator {
   constructor (processArgs) {
     const env = parseEnv(processArgs)
 
@@ -8,6 +8,11 @@ module.exports = class Process {
     this.address = env['address']
     this.port = env['port'] ?? 16112
     this.listenAddress = env['listen-address'] ?? '127.0.0.1'
+
+    if (typeof env['help'] !== 'undefined') {
+      console.log('KStratum Help\n--node <address>: Configures Kaspa node[Default: 79.120.76.62:16110]\n--address <wallet>: Configures mining wallet\n--port <port>: Configures Stratum port [Default: 16112]\n--listen-address <address>: Configures Stratum ip address [Default: 127.0.0.1]')
+      process.exit()
+    }
 
     if (!this.address || !/kaspa(dev|test|sim)?:[023456789abcdefghjkmnpqrtuvwxyzls]{61}/.test(this.address)) {
       console.error('Invalid address parameter')
