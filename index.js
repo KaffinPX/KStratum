@@ -61,7 +61,7 @@ client.on('ready', () => {
           const hash = hasher.serializeHeader(block.header, false)
           let blockReward = block.transactions[0].outputs[0].amount
           block.transactions[0].outputs.Slice(1).forEach(output => {
-                if (output.verboseData.scriptPublicKeyAddress == block.transactions[0].outputs[0].verboseData.scriptPublicKeyAddress) {
+                if (output.verboseData.scriptPublicKeyAddress.equals(block.transactions[0].outputs[0].verboseData.scriptPublicKeyAddress)) {
                         blockReward += BigInt(output.amount)
                 }
           })
