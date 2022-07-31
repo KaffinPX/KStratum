@@ -100,7 +100,7 @@ client.on('ready', () => {
 
     jobs.set(jobId, blockTemplate.block)
 
-    const difficulty = block.block.verboseData.difficulty / 2 ** 31
+    const difficulty =  2 ** 31 / block.block.header.bits
     
     if (lastDifficulty !== difficulty) {
       lastDifficulty = difficulty
