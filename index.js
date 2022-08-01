@@ -3,7 +3,7 @@ const Operator = require('./src/operator')
 const Client = require('./src/kaspa/client')
 const Hasher = require('./src/kaspa/hasher')
 const Server = require('./src/stratum/server')
-const crypto = require('crypto');
+const Crypto = require('crypto');
 
 
 const interactions = require('./src/stratum/interactions')
@@ -53,10 +53,10 @@ client.on('ready', () => {
                 peer.sendInteraction(new interactions.Answer(interaction.id, false))
         } 
 
-        let extraNonce = crypto.randomBytes(2).toString('hex')
+        let extraNonce = Crypto.randomBytes(2).toString('hex')
         
         while (extraNonces.has(extraNonce)) {
-                extraNonce = require('crypto').randomBytes(2).toString('hex')
+                extraNonce = require('Crypto').randomBytes(2).toString('hex')
         }
 
         peer.sendInteraction(new interactions.setExtranonce(extraNonce))
