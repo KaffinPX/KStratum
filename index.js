@@ -3,6 +3,8 @@ const Operator = require('./src/operator')
 const Client = require('./src/kaspa/client')
 const Hasher = require('./src/kaspa/hasher')
 const Server = require('./src/stratum/server')
+const crypto = require('crypto');
+
 
 const interactions = require('./src/stratum/interactions')
 
@@ -15,6 +17,8 @@ const client = new Client(operator.node)
 const hasher = new Hasher()
 
 const peers = new Set()
+
+const extraNonces = new Set()
 
 client.on('ready', () => {
   console.log('Connected to Kaspa node, starting stratum...')
@@ -43,9 +47,22 @@ client.on('ready', () => {
       if (interaction.method === 'subscribe') {
         peers.add(peer)
       } else if (interaction.method === 'authorize') {
-        peer.sendInteraction(new interactions.setExtranonce((require('crypto')).randomBytes(2).toString('hex')))
+
+        if (extraNonces.size == 65536 - 655) { //means that on average we won't find a nonce with 100 tries - Abort!
+                //To do: find out how to handle this if it ever were to occur
+                peer.sendInteraction(new interactions.Answer(interaction.id, false))
+        } 
+
+        let extraNonce = crypto.randomBytes(2).toString('hex')
+        
+        while (extraNonces.has(extraNonce)) {
+                extraNonce = require('crypto').randomBytes(2).toString('hex')
+        }
+
+        peer.sendInteraction(new interactions.setExtranonce(extraNonce))
         peer.sendInteraction(new interactions.setDifficulty(lastDifficulty))
         peer.sendInteraction(new interactions.Answer(interaction.id, true))
+
       } else if (interaction.method === 'submit') {
         const block = jobs.get(Number(interaction.params[1]))
         if (typeof block === 'undefined') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
