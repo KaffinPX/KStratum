@@ -1,6 +1,6 @@
 {
   "name": "kstratum",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Stratum adapter for Kaspa",
   "main": "index.js",
   "scripts": {
