@@ -6,7 +6,7 @@ module.exports = class kaspaClient extends events.EventEmitter {
   constructor (nodeAddress) {
     super()
 
-    this.kaspa = new kaspajs.Node(nodeAddress, () => process.nextTick(() => this.handleReady()))
+    this.kaspa = new kaspajs.Daemon(nodeAddress, () => process.nextTick(() => this.handleReady()))
   }
 
   async handleReady () {
