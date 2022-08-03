@@ -45,22 +45,21 @@ module.exports = class Peer extends events.EventEmitter {
   handleStream (data) {
     this.onGoingData += data.toString()
 
-    if (this.onGoingData.includes('}')) {
-      const splittedData = this.onGoingData.split('{')
+    if (this.onGoingData.includes('\n')) {
+      const splittedData = this.onGoingData.split('\n')
 
       splittedData.forEach((interaction) => {
         if (!interaction.includes('}')) return this.onGoingData = interaction
 
         try {
-          this.emit('interaction', this.parseInteraction('{' + interaction))
+          this.emit('interaction', this.parseInteraction(interaction))
         } catch (err) {
           console.error(err)
           this._socket.end('INVALID_INTERACTION')
         }
       })
 
-      const e = this.onGoingData.split('}')
-      this.onGoingData = e && e[1] || ''
+      this.onGoingData = splittedData[splittedData.length - 1]
     }
   }
 }

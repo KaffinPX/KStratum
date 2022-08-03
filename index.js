@@ -63,7 +63,7 @@ client.on('ready', () => {
           block.transactions[0].outputs.forEach(output => {
             blockReward += BigInt(output.amount)
           })
-          
+
           console.log(`Accepted block \x1b[33m${hash.toString('hex')}\x1b[0m, mined \x1b[33m${blockReward / BigInt(1e8)}\x1b[0m KAS!`)
 
           peer.sendInteraction(new interactions.Answer(interaction.id, true))
@@ -75,33 +75,26 @@ client.on('ready', () => {
     })
   })
 
-  const isSeenTemplate = new Set()
-
-  client.kaspa.subscribe('notifyBlockAddedRequest', {}, async (block) => {
+  client.on('newTemplate', async () => {
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
       payAddress: operator.address,
-      extraData: 'KStratum: Coded by KaffinPX & jwj & Not Thomiz'
+      extraData: 'KStratum[0.3.1].developers=["KaffinPX","jwj","Not Thomiz"]'
     })
 
-    if (!blockTemplate.isSynced) { console.error(`Node is not synced.`); process.exit(1) }
+    if (!blockTemplate.isSynced) { console.error('Node is not synced.'); process.exit(1) }
 
     const header = hasher.serializeHeader(blockTemplate.block.header, true)
 
-    if (isSeenTemplate.has(header)) return
-
-    isSeenTemplate.add(header)
-    setTimeout(() => { isSeenTemplate.delete(header) }, 10 * 1000)
-
     const job = hasher.serializeJobData(header)
+
     const lastJob = Array.from(jobs.entries()).pop()
     let jobId = (lastJob && lastJob[0] || 0) + 1
 
     if (jobId >= 99) { jobs.clear(); jobId = 1 }
-
     jobs.set(jobId, blockTemplate.block)
 
-    const difficulty = block.block.verboseData.difficulty / 2 ** 31
-    
+    const difficulty = Number(2n ** 255n / hasher.calculateTarget(BigInt(blockTemplate.block.header.bits))) / 2 ** 31
+
     if (lastDifficulty !== difficulty) {
       lastDifficulty = difficulty
 

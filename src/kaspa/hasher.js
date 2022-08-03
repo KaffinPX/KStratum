@@ -19,9 +19,6 @@ module.exports = class Hasher {
     blake2b.blake2bUpdate(hasher, Buffer.from(header.utxoCommitment, 'hex'))
     blake2b.blake2bUpdate(hasher, struct.pack('<QIQQQ', timestamp, header.bits, nonce, header.daaScore, header.blueScore))
 
-    /**
-     * @type {String}
-     */
     const blueWork = header.blueWork
     const blue_work = Buffer.from(blueWork.padStart(blueWork.length + blueWork.length % 2, '0'), 'hex')
 
@@ -45,6 +42,21 @@ module.exports = class Hasher {
     }
 
     return pre_hash_uints64
+  }
+
+  calculateTarget (bits) {
+    const unshifted_expt = bits >> 24n
+    let mant = bits & BigInt('0xFFFFFF')
+    let expt
+
+    if (unshifted_expt <= 3n) {
+      mant = mant >> (8n * (3n - unshifted_expt))
+      expt = 0n
+    } else {
+      expt = 8n * ((bits >> 24n) - 3n)
+    }
+
+    return mant << expt
   }
 
   to_little (buff) {
