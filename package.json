@@ -1,6 +1,6 @@
 {
   "name": "kstratum",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Stratum adapter for Kaspa.",
   "main": "index.js",
   "scripts": {
@@ -21,7 +21,7 @@
   "homepage": "https://github.com/KaffinPX/KStratum#readme",
   "dependencies": {
     "blakejs": "^1.2.1",
-    "kaspajs": "github:GateKVite/kaspajs",
+    "kaspajs": "^2.0.0",
     "modernlog": "^1.0.2",
     "python-struct": "^1.1.3"
   },

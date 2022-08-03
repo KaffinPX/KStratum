@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+process.on("unhandledRejection", (err) => {
+  console.error(err)
+  process.exit(1)
+})
+
 const Operator = require('./src/operator')
 const Client = require('./src/kaspa/client')
 const Hasher = require('./src/kaspa/hasher')
