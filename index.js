@@ -88,9 +88,10 @@ client.on('ready', () => {
     const job = hasher.serializeJobData(header)
 
     const lastJob = Array.from(jobs.entries()).pop()
-    let jobId = (lastJob && lastJob[0] || 0) + 1
-
+    
+    let jobId = (lastJob?.[0] ?? 0) + 1
     if (jobId >= 99) { jobs.clear(); jobId = 1 }
+
     jobs.set(jobId, blockTemplate.block)
 
     const difficulty = Number(2n ** 255n / hasher.calculateTarget(BigInt(blockTemplate.block.header.bits))) / 2 ** 31
