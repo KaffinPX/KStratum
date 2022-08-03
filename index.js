@@ -95,7 +95,7 @@ client.on('ready', () => {
     const lastJob = Array.from(jobs.entries()).pop()
     
     let jobId = (lastJob?.[0] ?? 0) + 1
-    if (jobId >= 99) { jobs.clear(); jobId = 1 }
+    if (jobId > 99) { jobId = 1 }
 
     jobs.set(jobId, blockTemplate.block)
 
