@@ -1,4 +1,4 @@
-class setExtranonce {
+class SetExtranonce {
   constructor (nonce) {
     this.nonce = nonce
     this.reservedBytes = 6
@@ -12,7 +12,7 @@ class setExtranonce {
   }
 }
 
-class setDifficulty {
+class SetDifficulty {
   constructor (difficulty) {
     this.difficulty = difficulty
   }
@@ -55,8 +55,8 @@ class Answer {
 }
 
 module.exports = {
-  setExtranonce,
-  setDifficulty,
+  SetExtranonce,
+  SetDifficulty,
   Notify,
   Answer
 }

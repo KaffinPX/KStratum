@@ -13,7 +13,7 @@ module.exports = class Peer extends events.EventEmitter {
     this._socket.on('error', (err) => (err))
   }
 
-  sendInteraction (interaction) {
+  async sendInteraction (interaction) {
     const jsonInteraction = interaction.toJSON()
 
     if (typeof jsonInteraction.id === 'undefined') {
@@ -34,12 +34,12 @@ module.exports = class Peer extends events.EventEmitter {
     this._socket.write(interactionCall + '\n')
   }
 
-  _handleStream (data) {
+  async _handleStream (data) {
     for (const byte of data) {
       if (byte === 0x0a) {
         const interaction = Buffer.from(this.cachedBytes)
 
-        this._handleMessage(interaction)
+        await this._handleMessage(interaction)
 
         this.cachedBytes = []
       } else {
@@ -52,20 +52,15 @@ module.exports = class Peer extends events.EventEmitter {
     }
   }
 
-  _handleMessage (buffer) {
+  async _handleMessage (buffer) {
     let interaction = buffer.toString()
 
-    try {
-      interaction = this._parseInteraction(interaction)
-    } catch (err) {
-      this._socket.end('INVALID_INTERACTION')
-    }
+    interaction = await this._parseInteraction(interaction).catch(() => { this._socket.end('INVALID_INTERACTION') })
 
     this.emit('interaction', interaction)
   }
 
-  
-  _parseInteraction (data) {
+  async _parseInteraction (data) {
     const interaction = JSON.parse(data)
 
     interaction.method = interaction.method.replace('mining.', '')

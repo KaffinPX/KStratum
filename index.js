@@ -31,6 +31,7 @@ client.on('ready', () => {
     } else {
       console.error(err)
     }
+
     process.exit(1)
   })
 
@@ -38,38 +39,39 @@ client.on('ready', () => {
   let lastDifficulty = 10
 
   server.on('peer', (peer) => {
-    peer.on('interaction', (interaction) => {
+    peer.on('interaction', async (interaction) => {
       if (interaction.method === 'subscribe') {
         peers.add(peer)
       } else if (interaction.method === 'authorize') {
-        peer.sendInteraction(new interactions.setExtranonce((require('crypto')).randomBytes(2).toString('hex')))
-        peer.sendInteraction(new interactions.setDifficulty(lastDifficulty))
-        peer.sendInteraction(new interactions.Answer(interaction.id, true))
+        await peer.sendInteraction(new interactions.SetExtranonce((require('crypto')).randomBytes(2).toString('hex')))
+        await peer.sendInteraction(new interactions.SetDifficulty(lastDifficulty))
+        await peer.sendInteraction(new interactions.Answer(interaction.id, true))
       } else if (interaction.method === 'submit') {
         const block = jobs.get(Number(interaction.params[1]))
-        if (typeof block === 'undefined') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
+        if (typeof block === 'undefined') return await peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
         block.header.nonce = BigInt(interaction.params[2]).toString()
 
-        client.kaspa.request('submitBlockRequest', {
+        const result = await client.kaspa.request('submitBlockRequest', {
           block,
           allowNonDAABlocks: false
-        }).then(result => {
-          if (result.rejectReason !== 'NONE') return peer.sendInteraction(new interactions.Answer(interaction.id, false))
-
-          const hash = hasher.serializeHeader(block.header, false)
-          let blockReward = 0n
-          block.transactions[0].outputs.forEach(output => {
-            blockReward += BigInt(output.amount)
-          })
-
-          console.log(`Accepted block \x1b[33m${hash.toString('hex')}\x1b[0m, mined \x1b[33m${blockReward / BigInt(1e8)}\x1b[0m KAS!`)
-
-          peer.sendInteraction(new interactions.Answer(interaction.id, true))
-        }).catch(err => {
+        }).catch(async (err) => {
           console.error(err)
-          peer.sendInteraction(new interactions.Answer(interaction.id, false))
+          await peer.sendInteraction(new interactions.Answer(interaction.id, false))
         })
+
+        if (result.rejectReason !== 'NONE') return await peer.sendInteraction(new interactions.Answer(interaction.id, false))
+
+        const hash = await hasher.serializeHeader(block.header, false)
+        let blockReward = 0n
+
+        for (const output of block.transactions[0].outputs) {
+          blockReward += BigInt(output.amount)
+        }
+
+        console.log(`Accepted block \x1b[33m${hash.toString('hex')}\x1b[0m, mined \x1b[33m${blockReward / BigInt(1e8)}\x1b[0m KAS!`)
+
+        await peer.sendInteraction(new interactions.Answer(interaction.id, true))
       }
     })
   })
@@ -82,29 +84,28 @@ client.on('ready', () => {
 
     if (!blockTemplate.isSynced) { console.error('Node is not synced.'); process.exit(1) }
 
-    const header = hasher.serializeHeader(blockTemplate.block.header, true)
-
-    const job = hasher.serializeJobData(header)
+    const header = await hasher.serializeHeader(blockTemplate.block.header, true)
+    const job = await hasher.serializeJobData(header)
 
     const lastJob = Array.from(jobs.entries()).pop()
-    
+
     let jobId = (lastJob?.[0] ?? 0) + 1
     if (jobId > 99) { jobId = 1 }
 
     jobs.set(jobId, blockTemplate.block)
 
-    const difficulty = Number(2n ** 255n / hasher.calculateTarget(BigInt(blockTemplate.block.header.bits))) / 2 ** 31
+    const difficulty = Number(2n ** 255n / await hasher.calculateTarget(BigInt(blockTemplate.block.header.bits))) / 2 ** 31
 
     if (lastDifficulty !== difficulty) {
       lastDifficulty = difficulty
 
-      peers.forEach(peer => {
-        peer.sendInteraction(new interactions.setDifficulty(lastDifficulty))
-      })
+      for (const peer of peers) {
+        await peer.sendInteraction(new interactions.SetDifficulty(lastDifficulty))
+      }
     }
 
-    peers.forEach(peer => {
-      peer.sendInteraction(new interactions.Notify(jobId.toString(), [job[0].toString(), job[1].toString(), job[2].toString(), job[3].toString()], blockTemplate.block.header.timestamp))
-    })
+    for (const peer of peers) {
+      await peer.sendInteraction(new interactions.Notify(jobId.toString(), [job[0].toString(), job[1].toString(), job[2].toString(), job[3].toString()], blockTemplate.block.header.timestamp))
+    }
   })
 })

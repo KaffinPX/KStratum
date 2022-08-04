@@ -16,7 +16,7 @@ module.exports = class stratumServer extends events.EventEmitter {
     this.server.listen(port, listenAddress)
   }
 
-  handleConnection (socket) {
+  async handleConnection (socket) {
     this.emit('peer', new Peer(socket))
   }
 }
