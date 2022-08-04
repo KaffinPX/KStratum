@@ -1,22 +1,16 @@
-#!/usr/bin/env node
-process.on("unhandledRejection", (err) => {
-  console.error(err)
-  process.exit(1)
-})
-
-const Operator = require('./src/operator')
+const Manager = require('./src/manager')
 const Client = require('./src/kaspa/client')
 const Hasher = require('./src/kaspa/hasher')
 const Server = require('./src/stratum/server')
 
 const interactions = require('./src/stratum/interactions')
 
-const operator = new Operator(process.argv)
+const manager = new Manager(process.argv)
 
-console.log(`Running KStratum for \x1b[33m${operator.address}\x1b[0m`)
-console.info(`Connecting to node \x1b[33m${operator.node}\x1b[0m`)
+console.log(`Running KStratum for \x1b[33m${manager.address}\x1b[0m`)
+console.info(`Connecting to node \x1b[33m${manager.node}\x1b[0m`)
 
-const client = new Client(operator.node)
+const client = new Client(manager.node)
 const hasher = new Hasher()
 
 const peers = new Set()
@@ -24,7 +18,7 @@ const peers = new Set()
 client.on('ready', () => {
   console.log('Connected to Kaspa node, starting stratum...')
 
-  const server = new Server(operator.port, operator.listenAddress)
+  const server = new Server(manager.port, manager.listenAddress)
 
   server.on('listening', () => {
     console.log(`Stratum server listening on \x1b[33m${server.server.address().address}:${server.server.address().port}\x1b[0m`)
@@ -82,7 +76,7 @@ client.on('ready', () => {
 
   client.on('newTemplate', async () => {
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
-      payAddress: operator.address,
+      payAddress: manager.address,
       extraData: 'KStratum[0.3.2].developers=["KaffinPX","jwj","Not Thomiz"]'
     })
 

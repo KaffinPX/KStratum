@@ -7,9 +7,9 @@ module.exports = class Peer extends events.EventEmitter {
     this._socket = socket
 
     this.sentInteractionCount = 0
-    this.onGoingData = ''
+    this.cachedBytes = []
 
-    this._socket.on('data', (data) => this.handleStream(data))
+    this._socket.on('data', (data) => this._handleStream(data))
     this._socket.on('error', (err) => (err))
   }
 
@@ -34,32 +34,42 @@ module.exports = class Peer extends events.EventEmitter {
     this._socket.write(interactionCall + '\n')
   }
 
-  parseInteraction (data) {
+  _handleStream (data) {
+    for (const byte of data) {
+      if (byte === 0x0a) {
+        const interaction = Buffer.from(this.cachedBytes)
+
+        this._handleMessage(interaction)
+
+        this.cachedBytes = []
+      } else {
+        this.cachedBytes.push(byte)
+
+        if (this.cachedBytes.length > 512) {
+          this._socket.end('INVALID_INTERACTION_SIZE')
+        }
+      }
+    }
+  }
+
+  _handleMessage (buffer) {
+    let interaction = buffer.toString()
+
+    try {
+      interaction = this._parseInteraction(interaction)
+    } catch (err) {
+      this._socket.end('INVALID_INTERACTION')
+    }
+
+    this.emit('interaction', interaction)
+  }
+
+  
+  _parseInteraction (data) {
     const interaction = JSON.parse(data)
 
     interaction.method = interaction.method.replace('mining.', '')
 
     return interaction
-  }
-
-  handleStream (data) {
-    this.onGoingData += data.toString()
-
-    if (this.onGoingData.includes('\n')) {
-      const splittedData = this.onGoingData.split('\n')
-
-      splittedData.forEach((interaction) => {
-        if (!interaction.includes('}')) return this.onGoingData = interaction
-
-        try {
-          this.emit('interaction', this.parseInteraction(interaction))
-        } catch (err) {
-          console.error(err)
-          this._socket.end('INVALID_INTERACTION')
-        }
-      })
-
-      this.onGoingData = splittedData[splittedData.length - 1]
-    }
   }
 }
