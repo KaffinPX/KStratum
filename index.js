@@ -60,6 +60,7 @@ client.on('ready', () => {
           await peer.sendInteraction(new interactions.Answer(interaction.id, false))
         })
 
+        if (!result) return
         if (result.rejectReason !== 'NONE') return await peer.sendInteraction(new interactions.Answer(interaction.id, false))
 
         const hash = await hasher.serializeHeader(block.header, false)

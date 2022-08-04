@@ -6,7 +6,7 @@ module.exports = class Peer extends events.EventEmitter {
 
     this._socket = socket
 
-    this.sentInteractionCount = 0
+    this.sentInteractions = 0
     this.cachedBytes = []
 
     this._socket.on('data', (data) => this._handleStream(data))
@@ -17,8 +17,8 @@ module.exports = class Peer extends events.EventEmitter {
     const jsonInteraction = interaction.toJSON()
 
     if (typeof jsonInteraction.id === 'undefined') {
-      this.sentInteractionCount += 1
-      jsonInteraction.id = this.sentInteractionCount
+      this.sentInteractions += 1
+      jsonInteraction.id = this.sentInteractions
     }
 
     let interactionCall = JSON.stringify(jsonInteraction)
