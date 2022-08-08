@@ -41,15 +41,29 @@ class Notify {
 }
 
 class Answer {
-  constructor (interactionId, answer) {
+  constructor (interactionId) {
     this.interactionId = interactionId
-    this.answer = answer
   }
 
   toJSON () {
     return {
       id: this.interactionId,
-      result: this.answer
+      result: true
+    }
+  }
+}
+
+class ErrorAnswer {
+  constructor (interactionId, error) {
+    this.interactionId = interactionId
+    this.error = error
+  }
+
+  toJSON () {
+    return {
+      id: this.interactionId,
+      result: null,
+      error: this.error
     }
   }
 }
@@ -58,5 +72,6 @@ module.exports = {
   SetExtranonce,
   SetDifficulty,
   Notify,
-  Answer
+  Answer,
+  ErrorAnswer
 }

@@ -4,6 +4,7 @@ const Hasher = require('./src/kaspa/hasher')
 const Server = require('./src/stratum/server')
 
 const interactions = require('./src/stratum/interactions')
+const errors = require('./src/stratum/errors')
 
 const manager = new Manager(process.argv)
 
@@ -48,31 +49,36 @@ client.on('ready', () => {
         await peer.sendInteraction(new interactions.Answer(interaction.id, true))
       } else if (interaction.method === 'submit') {
         const block = jobs.get(Number(interaction.params[1]))
-        if (typeof block === 'undefined') return await peer.sendInteraction(new interactions.Answer(interaction.id, false))
+        if (typeof block === 'undefined') return await peer.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['JOB_NOT_FOUND']))
 
         block.header.nonce = BigInt(interaction.params[2]).toString()
 
-        const result = await client.kaspa.request('submitBlockRequest', {
+        const hash = await hasher.serializeHeader(block.header, false)
+
+        client.kaspa.request('submitBlockRequest', {
           block,
           allowNonDAABlocks: false
+        }).then(() => {
+          let blockReward = 0n
+          for (const output of block.transactions[0].outputs) {
+            blockReward += BigInt(output.amount)
+          }
+  
+          console.log(`Accepted block \x1b[33m${hash.toString('hex')}\x1b[0m, mined \x1b[33m${blockReward / BigInt(1e8)}\x1b[0m KAS!`)
+  
+          await peer.sendInteraction(new interactions.Answer(interaction.id, true))
         }).catch(async (err) => {
-          console.error(err)
-          await peer.sendInteraction(new interactions.Answer(interaction.id, false))
+          if (err.message.includes('ErrInvalidPow')) {
+            await peer.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['LOW_DIFFICULTY_SHARE']))
+            console.error(`Invalid work submitted for block \x1b[33m${hash.toString('hex')}\x1b[0m`)
+          } else if (err.message.includes('ErrDuplicateBlock')) {
+            await peer.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['DUPLICATE_SHARE']))
+            console.error(`Block \x1b[33m${hash.toString('hex')}\x1b[0m already submitted`)
+          } else {
+            await peer.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['UNKNOWN']))
+            console.error(err)
+          }
         })
-
-        if (!result) return
-        if (result.rejectReason !== 'NONE') return await peer.sendInteraction(new interactions.Answer(interaction.id, false))
-
-        const hash = await hasher.serializeHeader(block.header, false)
-        let blockReward = 0n
-
-        for (const output of block.transactions[0].outputs) {
-          blockReward += BigInt(output.amount)
-        }
-
-        console.log(`Accepted block \x1b[33m${hash.toString('hex')}\x1b[0m, mined \x1b[33m${blockReward / BigInt(1e8)}\x1b[0m KAS!`)
-
-        await peer.sendInteraction(new interactions.Answer(interaction.id, true))
       }
     })
   })
