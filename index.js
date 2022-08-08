@@ -4,7 +4,6 @@ const Hasher = require('./src/kaspa/hasher')
 const Server = require('./src/stratum/server')
 
 const interactions = require('./src/stratum/interactions')
-const errors = require('./src/stratum/errors')
 
 const environment = new Environment(process.argv)
 
@@ -52,7 +51,7 @@ client.on('ready', () => {
         await worker.sendInteraction(new interactions.Answer(interaction.id, true))
       } else if (interaction.method === 'submit') {
         const block = server.jobs.get(Number(interaction.params[1]))
-        if (typeof block === 'undefined') return await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['JOB_NOT_FOUND']))
+        if (typeof block === 'undefined') return await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, interactions.errors['JOB_NOT_FOUND']))
 
         block.header.nonce = BigInt(interaction.params[2]).toString()
         const hash = await hasher.serializeHeader(block.header, false)
@@ -70,13 +69,13 @@ client.on('ready', () => {
           await worker.sendInteraction(new interactions.Answer(interaction.id, true))
         }).catch(async (err) => {
           if (err.message.includes('ErrInvalidPoW')) {
-            await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['LOW_DIFFICULTY_SHARE']))
+            await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, interactions.errors['LOW_DIFFICULTY_SHARE']))
             console.error(`Invalid work submitted for block \x1b[33m${hash.toString('hex')}\x1b[0m`)
           } else if (err.message.includes('ErrDuplicateBlock')) {
-            await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['DUPLICATE_SHARE']))
+            await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, interactions.errors['DUPLICATE_SHARE']))
             console.error(`Block \x1b[33m${hash.toString('hex')}\x1b[0m already submitted`)
           } else {
-            await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['UNKNOWN']))
+            await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, interactions.errors['UNKNOWN']))
             console.error(err)
           }
         })
