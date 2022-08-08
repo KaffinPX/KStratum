@@ -82,20 +82,21 @@ client.on('ready', () => {
     })
   })
 
+  let lastJobId = 1
+
   client.on('newTemplate', async () => {
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
       payAddress: environment.address,
       extraData: 'KStratum[0.3.2].developers=["KaffinPX","jwj","Not Thomiz"]'
     })
-
     if (!blockTemplate.isSynced) { console.error('Node is not synced.'); process.exit(1) }
 
     const header = await hasher.serializeHeader(blockTemplate.block.header, true)
     const job = await hasher.serializeJobData(header)
 
-    const lastJob = Array.from(jobs.entries()).pop()?.[0] ?? 0
+    const jobId = lastJobId == 99 ? 1 : (lastJobId + 1)
+    lastJobId = jobId
 
-    let jobId = lastJob == 99 ? 1 : (lastJob + 1)
     jobs.set(jobId, blockTemplate.block)
 
     const difficulty = Number(2n ** 255n / await hasher.calculateTarget(BigInt(blockTemplate.block.header.bits))) / 2 ** 31
