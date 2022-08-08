@@ -1,6 +1,6 @@
 const events = require('events')
 
-module.exports = class Peer extends events.EventEmitter {
+module.exports = class Worker extends events.EventEmitter {
   constructor (socket) {
     super()
 
@@ -11,6 +11,7 @@ module.exports = class Peer extends events.EventEmitter {
 
     this._socket.on('data', (data) => this._handleStream(data))
     this._socket.on('error', (err) => (err))
+    this._socket.on('end', () => this.emit('end'))
   }
 
   async sendInteraction (interaction) {

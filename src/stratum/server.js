@@ -1,7 +1,7 @@
 const net = require('net')
 const events = require('events')
 
-const Peer = require('./peer')
+const Worker = require('./worker')
 
 module.exports = class stratumServer extends events.EventEmitter {
   constructor (port, listenAddress) {
@@ -17,6 +17,6 @@ module.exports = class stratumServer extends events.EventEmitter {
   }
 
   async handleConnection (socket) {
-    this.emit('peer', new Peer(socket))
+    this.emit('worker', new Worker(socket))
   }
 }

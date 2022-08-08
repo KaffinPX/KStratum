@@ -14,7 +14,7 @@ console.info(`Connecting to node \x1b[33m${environment.node}\x1b[0m`)
 const client = new Client(environment.node)
 const hasher = new Hasher()
 
-const peers = new Set()
+const workers = new Set()
 
 client.on('ready', () => {
   console.log('Connected to Kaspa node, starting stratum...')
@@ -36,23 +36,25 @@ client.on('ready', () => {
     process.exit(1)
   })
 
-  const jobs = new Map()
-  let lastDifficulty = 10
+  server.jobs = new Map()
+  server.historical = {
+    difficulty: 1,
+    jobId: 1
+  }
 
-  server.on('peer', (peer) => {
-    peer.on('interaction', async (interaction) => {
+  server.on('worker', (worker) => {
+    worker.on('interaction', async (interaction) => {
       if (interaction.method === 'subscribe') {
-        peers.add(peer)
+        workers.add(worker)
       } else if (interaction.method === 'authorize') {
-        await peer.sendInteraction(new interactions.SetExtranonce((require('crypto')).randomBytes(2).toString('hex')))
-        await peer.sendInteraction(new interactions.SetDifficulty(lastDifficulty))
-        await peer.sendInteraction(new interactions.Answer(interaction.id, true))
+        await worker.sendInteraction(new interactions.SetExtranonce((require('crypto')).randomBytes(2).toString('hex')))
+        await worker.sendInteraction(new interactions.SetDifficulty(server.historical.difficulty))
+        await worker.sendInteraction(new interactions.Answer(interaction.id, true))
       } else if (interaction.method === 'submit') {
         const block = jobs.get(Number(interaction.params[1]))
-        if (typeof block === 'undefined') return await peer.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['JOB_NOT_FOUND']))
+        if (typeof block === 'undefined') return await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['JOB_NOT_FOUND']))
 
         block.header.nonce = BigInt(interaction.params[2]).toString()
-
         const hash = await hasher.serializeHeader(block.header, false)
 
         client.kaspa.request('submitBlockRequest', {
@@ -65,24 +67,22 @@ client.on('ready', () => {
           }
   
           console.info(`Accepted block \x1b[33m${hash.toString('hex')}\x1b[0m, mined \x1b[33m${blockReward / BigInt(1e8)}\x1b[0m KAS!`)
-          await peer.sendInteraction(new interactions.Answer(interaction.id, true))
+          await worker.sendInteraction(new interactions.Answer(interaction.id, true))
         }).catch(async (err) => {
           if (err.message.includes('ErrInvalidPoW')) {
-            await peer.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['LOW_DIFFICULTY_SHARE']))
+            await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['LOW_DIFFICULTY_SHARE']))
             console.error(`Invalid work submitted for block \x1b[33m${hash.toString('hex')}\x1b[0m`)
           } else if (err.message.includes('ErrDuplicateBlock')) {
-            await peer.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['DUPLICATE_SHARE']))
+            await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['DUPLICATE_SHARE']))
             console.error(`Block \x1b[33m${hash.toString('hex')}\x1b[0m already submitted`)
           } else {
-            await peer.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['UNKNOWN']))
+            await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['UNKNOWN']))
             console.error(err)
           }
         })
       }
     })
   })
-
-  let lastJobId = 1
 
   client.on('newTemplate', async () => {
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
@@ -94,23 +94,23 @@ client.on('ready', () => {
     const header = await hasher.serializeHeader(blockTemplate.block.header, true)
     const job = await hasher.serializeJobData(header)
 
-    const jobId = lastJobId == 99 ? 1 : (lastJobId + 1)
-    lastJobId = jobId
+    const jobId = server.historical.jobId == 99 ? 1 : (server.historical.jobId + 1)
+    server.historical.jobId = jobId
 
-    jobs.set(jobId, blockTemplate.block)
+    server.jobs.set(jobId, blockTemplate.block)
 
     const difficulty = Number(2n ** 255n / await hasher.calculateTarget(BigInt(blockTemplate.block.header.bits))) / 2 ** 31
 
-    if (lastDifficulty !== difficulty) {
-      lastDifficulty = difficulty
+    if (server.historical.difficulty !== difficulty) {
+      server.historical.difficulty = difficulty
 
-      for (const peer of peers) {
-        await peer.sendInteraction(new interactions.SetDifficulty(lastDifficulty))
+      for (const worker of workers) {
+        await worker.sendInteraction(new interactions.SetDifficulty(difficulty))
       }
     }
 
-    for (const peer of peers) {
-      await peer.sendInteraction(new interactions.Notify(jobId.toString(), [job[0].toString(), job[1].toString(), job[2].toString(), job[3].toString()], blockTemplate.block.header.timestamp))
+    for (const worker of workers) {
+      await worker.sendInteraction(new interactions.Notify(jobId.toString(), [job[0].toString(), job[1].toString(), job[2].toString(), job[3].toString()], blockTemplate.block.header.timestamp))
     }
   })
 })
