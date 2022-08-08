@@ -87,7 +87,7 @@ client.on('ready', () => {
   client.on('newTemplate', async () => {
     const blockTemplate = await client.kaspa.request('getBlockTemplateRequest', {
       payAddress: environment.address,
-      extraData: 'KStratum[0.3.2].developers=["KaffinPX","jwj","Not Thomiz"]'
+      extraData: 'KStratum[0.3.4].developers=["KaffinPX","jwj","Not Thomiz"]'
     })
     if (!blockTemplate.isSynced) { console.error('Node is not synced.'); process.exit(1) }
 
