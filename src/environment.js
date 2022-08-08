@@ -1,6 +1,6 @@
 require('modernlog/patch')
 
-module.exports = class Manager {
+module.exports = class Variables {
   constructor (processArgs) {
     const env = parseEnv(processArgs)
 
