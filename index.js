@@ -51,7 +51,7 @@ client.on('ready', () => {
         await worker.sendInteraction(new interactions.SetDifficulty(server.historical.difficulty))
         await worker.sendInteraction(new interactions.Answer(interaction.id, true))
       } else if (interaction.method === 'submit') {
-        const block = jobs.get(Number(interaction.params[1]))
+        const block = server.jobs.get(Number(interaction.params[1]))
         if (typeof block === 'undefined') return await worker.sendInteraction(new interactions.ErrorAnswer(interaction.id, errors['JOB_NOT_FOUND']))
 
         block.header.nonce = BigInt(interaction.params[2]).toString()
