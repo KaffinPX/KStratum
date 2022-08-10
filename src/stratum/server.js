@@ -17,6 +17,7 @@ module.exports = class stratumServer extends events.EventEmitter {
   }
 
   async handleConnection (socket) {
+    console.info("New worker connected!")
     this.emit('worker', new Worker(socket))
   }
 }
