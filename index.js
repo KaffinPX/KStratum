@@ -36,10 +36,9 @@ client.on('ready', () => {
   })
 
   server.jobs = new Map()
-  server.historical = {
-    difficulty: 1,
-    jobId: 1
-  }
+  
+  server.jobs.lastJob = 1
+  server.difficulty = 1
 
   server.on('worker', (worker) => {
     worker.on('interaction', async (interaction) => {
@@ -47,7 +46,7 @@ client.on('ready', () => {
         workers.add(worker)
       } else if (interaction.method === 'authorize') {
         await worker.sendInteraction(new interactions.SetExtranonce((require('crypto')).randomBytes(2).toString('hex')))
-        await worker.sendInteraction(new interactions.SetDifficulty(server.historical.difficulty))
+        await worker.sendInteraction(new interactions.SetDifficulty(server.difficulty))
         await worker.sendInteraction(new interactions.Answer(interaction.id, true))
       } else if (interaction.method === 'submit') {
         const block = server.jobs.get(Number(interaction.params[1]))
@@ -61,7 +60,7 @@ client.on('ready', () => {
           allowNonDAABlocks: false
         }).then(async () => {
           let blockReward = 0n
-          
+
           for (const output of block.transactions[0].outputs) {
             if (output.scriptPublicKey.scriptPublicKey === block.transactions[0].outputs[0].scriptPublicKey.scriptPublicKey){
                 blockReward += BigInt(output.amount)
@@ -96,15 +95,15 @@ client.on('ready', () => {
     const header = await hasher.serializeHeader(blockTemplate.block.header, true)
     const job = await hasher.serializeJobData(header)
 
-    const jobId = server.historical.jobId == 99 ? 1 : (server.historical.jobId + 1)
-    server.historical.jobId = jobId
+    const jobId = server.jobs.jobId == 99 ? 1 : (server.jobs.jobId + 1)
+    server.jobs.jobId = jobId
 
     server.jobs.set(jobId, blockTemplate.block)
 
     const difficulty = Number(2n ** 255n / await hasher.calculateTarget(BigInt(blockTemplate.block.header.bits))) / 2 ** 31
 
-    if (server.historical.difficulty !== difficulty) {
-      server.historical.difficulty = difficulty
+    if (server.difficulty !== difficulty) {
+      server.difficulty = difficulty
 
       for (const worker of workers) {
         await worker.sendInteraction(new interactions.SetDifficulty(difficulty))

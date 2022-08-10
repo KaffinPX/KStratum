@@ -9,14 +9,14 @@ module.exports = class stratumServer extends events.EventEmitter {
 
     this.server = net.createServer()
 
-    this.server.on('connection', (socket) => this.handleConnection(socket))
+    this.server.on('connection', (socket) => this._handleConnection(socket))
     this.server.on('listening', () => this.emit('listening'))
     this.server.on('error', (err) => this.emit('error', err))
 
     this.server.listen(port, listenAddress)
   }
 
-  async handleConnection (socket) {
+  async _handleConnection (socket) {
     this.emit('worker', new Worker(socket))
   }
 }
