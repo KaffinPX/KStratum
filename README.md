@@ -14,6 +14,6 @@ Install NodeJS 16 from [here](https://nodejs.org/) and run KStratum by ``npx kst
 * ``--node <ip/domain:port>``: Switchs to another node. Default: `79.120.76.62:16110`
 * ``--address <address>``: Sets mining address.
 * ``--port <port>``: Sets Stratum listening port. Default: `16112`
-* ``--listen-address <ip/domain>``: Sets Stratum listening address. Default: `127.0.0.1`
+* ``--listen-address <ip/domain>``: Sets Stratum listening address. Default: `127.0.0.1` (**Note** to expose the KStratum service to your local network, use `0.0.0.0`)
 
 #### Sponsored by [lolMiner](https://github.com/Lolliedieb/lolMiner-releases)
