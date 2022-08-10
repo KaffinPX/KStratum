@@ -61,8 +61,11 @@ client.on('ready', () => {
           allowNonDAABlocks: false
         }).then(async () => {
           let blockReward = 0n
+          let minerScriptPublicKey = block.transactions[0].outputs[0].scriptPublicKey.scriptPublicKey //first coinbase Output is always miner
           for (const output of block.transactions[0].outputs) {
-            blockReward += BigInt(output.amount)
+            if (output.scriptPublicKey.scriptPublicKey === minerScriptPublicKey){
+                blockReward += BigInt(output.amount)
+            }
           }
   
           console.info(`Accepted block \x1b[33m${hash.toString('hex')}\x1b[0m, mined \x1b[33m${blockReward / BigInt(1e8)}\x1b[0m KAS!`)
