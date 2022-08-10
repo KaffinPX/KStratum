@@ -8,7 +8,24 @@
 * Supports multiple networks(Testnet, mainnet...).
 
 ## Usage
-Install NodeJS 16 from [here](https://nodejs.org/) and run KStratum by ``npx kstratum@latest <arguments>`` on command line.
+### npx
+Install NodeJS 16 from [here](https://nodejs.org/) and run KStratum:
+```
+npx kstratum@latest <arguments>
+```
+
+### Docker
+Modify the command arguments in the included Dockerfile to reflect your Node, Wallet, Port, and Listening Address.
+
+Build the container:
+```
+docker build -t kstratum .
+```
+
+Run the container locally:
+```
+docker run -p 16112:16112 -t kstratum
+```
 
 ### Arguments
 * ``--node <ip/domain:port>``: Switchs to another node. Default: `79.120.76.62:16110`
