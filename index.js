@@ -37,7 +37,7 @@ client.on('ready', () => {
 
   server.jobs = new Map()
 
-  server.jobs.lastJob = 1
+  server.jobs.jobId = 1
   server.difficulty = 1
 
   server.on('worker', (worker) => {
